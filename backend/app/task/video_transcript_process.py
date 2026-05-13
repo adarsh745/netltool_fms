@@ -24,13 +24,20 @@ def process_video_transcript(video_id: int):
         segments, info = model.transcribe(
             video.url
         )
-        segments = list(segments)
+        audio_duration = info.duration
+        print(f"Audio duration: {audio_duration} seconds")
+        last_commited_progress  =10 
+        COMMIT_THRESHOLD = 5
         transcript = ""
-        total_segments = len(segments)
-        for segmaent in segments:
-            transcript += segmaent.text + " "
-            video.video_status = f"{int((segments.index(segmaent)+1)/total_segments*100)}"
-            db.commit()
+        # total_segments = len(segments)
+        for segment in segments:
+            transcript += segment.text + " "
+            raw_progress = (segment.end / audio_duration) * 85 + 10
+            progress = min(int(raw_progress), 95)
+            if progress - last_commited_progress >= COMMIT_THRESHOLD:
+                video.video_status = str(progress)
+                db.commit()
+        last_committed_progress = progress
         video.transcript = transcript
         draft = generate_blog_with_ollama(video_id=video_id, video_title=video.title, video_transcript=transcript, db=db)
         print("this is the draft" , draft)
