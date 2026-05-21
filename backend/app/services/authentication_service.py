@@ -1,0 +1,65 @@
+from app.utils import mail_config
+from datetime import timedelta , datetime
+from jose import jwt
+from fastapi import HTTPException
+from app.utils.auth_config import SECRET_KEY, ALGORITHM, INVITATION_URL
+
+from app.schemas.User import UserCreate
+from app.models.User import User
+from sqlalchemy.orm import Session
+from app.services.mail_service import send_mail
+from app.utils.mail_config import mail_config
+from app.schemas.email_schema import EmailRequest
+
+
+
+def create_access_token(data:dict , expire_timedelta:timedelta = None):
+
+    to_encode = data.copy()
+
+    expire = datetime.utcnow() + (expire_timedelta or timedelta(hours=1))
+
+    to_encode.update({"exp" : expire})
+
+    encoded_jwt = jwt.encode(to_encode , SECRET_KEY , algorithm=ALGORITHM)
+
+    return encoded_jwt
+
+# create user and send mail
+async def create_user_for_login(user:UserCreate , db:Session):
+    try:
+        db_user = db.query(User).filter(User.email == user.email).first()
+        if db_user:
+            raise HTTPException(status_code=400 , detail="User already exists")
+        db_user = User(
+            email=user.email,
+            first_name=user.first_name,
+            role=user.role
+        )
+        invitation_token = create_access_token({"user_id" : db_user.id})
+        db_user.invitation_token = invitation_token
+        db_user.invitation_expiry = datetime.utcnow() + timedelta(hours=24)
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+
+        # send invitation mail for user 
+
+        await send_mail(mail_config=mail_config , email_data=EmailRequest(
+            to=[user.email],
+            subject="Invitation Mail",
+            body=f"You are invited to join Netltool FMS. Click on the link to register: {INVITATION_URL}{invitation_token}"
+        ))
+        return True , user
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500 , detail=str(e))
+    
+
+# login user 
+
+# register user 
+
+# update user 
+
+#soft delete user 

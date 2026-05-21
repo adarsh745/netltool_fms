@@ -1,14 +1,42 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from app.db.database import base
 import datetime
 
-class User(base):
-    __tablename__ = "User"
 
-    id = Column(String, primary_key=True)
-    email = Column(String)
-    google_id = Column(String)
-    password = Column(String)
-    avatar_url = Column(String)
-    company = Column(String)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+class User(base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    email = Column(String, unique=True, nullable=False)
+
+    google_id = Column(String, nullable=True)
+
+    password = Column(String, nullable=True)
+
+    avatar_url = Column(String, nullable=True)
+
+    company = Column(String, nullable=True)
+
+    created_at = Column(
+        DateTime,
+        default=datetime.datetime.utcnow
+    )
+
+    first_name = Column(String, nullable=True)
+
+    last_name = Column(String, nullable=True)
+
+    phone = Column(String, nullable=True)
+
+    role = Column(String, default="User")
+
+    is_register = Column(Boolean, default=False)
+
+    is_active = Column(Boolean, default=True)
+
+    is_deleted = Column(Boolean, default=False)
+
+    invitation_token = Column(String, nullable=True)
+
+    invitation_expiry = Column(DateTime, nullable=True)
