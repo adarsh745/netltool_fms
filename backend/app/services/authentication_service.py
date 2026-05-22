@@ -28,6 +28,8 @@ def create_access_token(data:dict , expire_timedelta:timedelta = None):
 # create user and send mail
 async def create_user_for_login(user:UserCreate , db:Session):
     try:
+
+        
         db_user = db.query(User).filter(User.email == user.email).first()
         if db_user:
             raise HTTPException(status_code=400 , detail="User already exists")
@@ -36,21 +38,25 @@ async def create_user_for_login(user:UserCreate , db:Session):
             first_name=user.first_name,
             role=user.role
         )
+
         invitation_token = create_access_token({"user_id" : db_user.id})
         db_user.invitation_token = invitation_token
         db_user.invitation_expiry = datetime.utcnow() + timedelta(hours=24)
-        db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
-
-        # send invitation mail for user 
 
         await send_mail(mail_config=mail_config , email_data=EmailRequest(
             to=[user.email],
             subject="Invitation Mail",
             body=f"You are invited to join Netltool FMS. Click on the link to register: {INVITATION_URL}{invitation_token}"
         ))
-        return True , user
+
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+
+        # send invitation mail for user 
+
+       
+        return db_user
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500 , detail=str(e))
@@ -58,8 +64,30 @@ async def create_user_for_login(user:UserCreate , db:Session):
 
 # login user 
 
+
 # register user 
+
 
 # update user 
 
 #soft delete user 
+
+# get user 
+def get_users(db:Session):
+    try:
+        return db.query(User).all()
+    except Exception as e:
+        raise HTTPException(status_code=500 , detail=str(e))
+    
+# delete user for testing purpose only
+def delete_user(db:Session , user_id:int):
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404 , detail="User not found")
+        db.delete(user)
+        db.commit()
+        return {"message" : "User deleted successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500 , detail=str(e))

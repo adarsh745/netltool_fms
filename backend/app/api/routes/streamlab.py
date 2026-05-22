@@ -137,4 +137,4 @@ async def get_video_blog_draft(
         raise HTTPException(status_code=404, detail="Draft not found")
     return {"draft": draft}
 
-
+    

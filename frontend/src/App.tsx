@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import Login from "./pages/Login";
+import Navbar from "./components/Home/Navbar";
 
 function App() {
 
@@ -12,7 +13,7 @@ function App() {
   return (
 
     <div>
-
+      
       {isLoggedIn ? (
 
         <div

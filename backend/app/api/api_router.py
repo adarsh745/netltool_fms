@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes.auth import router as auth_router
+from app.api.routes.authentication import router as auth_router
 from app.api.routes.streamlab import router as streamlab_apis
 from app.api.routes.blog import router as blog_apis
 from app.api.routes.projects import router as projects_apis

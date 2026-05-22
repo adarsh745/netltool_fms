@@ -4,3 +4,4 @@ class UserCreate(BaseModel):
     email: str
     first_name:str
     role: str = "User"
+
