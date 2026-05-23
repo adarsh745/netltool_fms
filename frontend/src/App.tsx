@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import Login from "./pages/Login";
-import Navbar from "./components/Home/Navbar";
+import Homepage from "./pages/Homepage";
 
 function App() {
 
@@ -15,19 +15,7 @@ function App() {
     <div>
       
       {isLoggedIn ? (
-
-        <div
-          className="
-            min-h-screen
-            flex
-            items-center
-            justify-center
-            text-5xl
-            font-bold
-          "
-        >
-          Dashboard
-        </div>
+        <Homepage/>
 
       ) : (
 
@@ -36,6 +24,7 @@ function App() {
         />
 
       )}
+      
 
     </div>
 
