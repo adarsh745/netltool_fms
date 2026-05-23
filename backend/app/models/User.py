@@ -29,7 +29,7 @@ class User(base):
 
     phone = Column(String, nullable=True)
 
-    role = Column(String, default="User")
+    role = Column(Integer, nullable=False)
 
     is_register = Column(Boolean, default=False)
 
