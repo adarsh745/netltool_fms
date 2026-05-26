@@ -8,6 +8,8 @@ import Homepage from "./pages/Homepage";
 import Register from "./pages/Register";
 import Blogs from "./pages/Blogs";
 import Projects from "./pages/Projects";
+import BlogEditor from "./pages/BlogEditor";
+import Video from "./pages/Video";
 
 function App() {
 
@@ -37,6 +39,12 @@ function App() {
             <Homepage/>
           }
         />
+        <Route
+          path="/videos"
+          element={
+            <Video/>
+          }
+        />
         <Route 
         path="/blogs"
         element={<Blogs/>}
@@ -45,6 +53,7 @@ function App() {
         path="/projects"
         element={<Projects/>}
         />
+        <Route path="/blog-editor" element={<BlogEditor/>} />
       </Routes>
 
     </div>

@@ -1,14 +1,24 @@
 import { NavLink } from "react-router-dom";
+// @ts-ignore
 import Blogs from "../../assets/Navbar/Blogs.svg";
+// @ts-ignore
 import Calender from "../../assets/Navbar/Calender.svg";
+// @ts-ignore
 import Hardware from "../../assets/Navbar/Hardware.svg";
+// @ts-ignore
 import Home from "../../assets/Navbar/Home.svg";
+// @ts-ignore
 import Projects from "../../assets/Navbar/Projects.svg";
+// @ts-ignore
 import Setting from "../../assets/Navbar/Setting.svg";
+// @ts-ignore
 import Task from "../../assets/Navbar/Task.svg";
+// @ts-ignore
 import Transcript from "../../assets/Navbar/Transcript.svg";
+// @ts-ignore
 import VideoRecorder from "../../assets/Navbar/Video-recorder.svg";
-import Video from "../../assets/Navbar/Video.svg"
+// @ts-ignore
+import Video from "../../assets/Navbar/Video.svg";
 
 export interface NavItem {
   id: number;
@@ -30,12 +40,12 @@ const options: NavItem[] = [
     path: "/",
   },
 
-  {
-    id: 2,
-    title: "Video Recorder",
-    icon: VideoRecorder,
-    path: "/video-recorder",
-  },
+  // {
+  //   id: 2,
+  //   title: "Video Recorder",
+  //   icon: VideoRecorder,
+  //   path: "/video-recorder",
+  // },
 
   {
     id: 3,
@@ -44,12 +54,12 @@ const options: NavItem[] = [
     path: "/videos",
   },
 
-  {
-    id: 4,
-    title: "Transcripts",
-    icon: Transcript,
-    path: "/transcripts",
-  },
+  // {
+  //   id: 4,
+  //   title: "Transcripts",
+  //   icon: Transcript,
+  //   path: "/transcripts",
+  // },
 
   {
     id: 5,

@@ -1,3 +1,5 @@
+import {useNavigate} from 'react-router-dom'
+
 import LoginBar from "../components/Home/LoginBar"
 import Button from "../components/UI/Button"
 import CustomTable from "../components/UI/CustomTable"
@@ -23,9 +25,15 @@ const blogData = [
 ]
 
 const Blogs = ()=>{
+
+    const navigate = useNavigate()
+
+     const handleCreateNewBlog = () => {
+        navigate("/blog-editor");
+      };
+
     return <div>
         <OptionsContainer>
-            <LoginBar/>
             <div className="p-6" >
                 <div className="flex flex-row justify-between">
                     <div>
@@ -34,7 +42,7 @@ const Blogs = ()=>{
                     </div>
                      
                      <div>
-                        <Button text="Create New Blog + " onClick={()=>{}} variant="primary"/>
+                        <Button text="Create New Blog + " onClick={handleCreateNewBlog} variant="primary"/>
                      </div>
 
                 </div>

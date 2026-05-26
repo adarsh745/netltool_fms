@@ -1,3 +1,4 @@
+import LoginBar from "../Home/LoginBar";
 import Navbar from "../Home/Navbar";
 
 const OptionsContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -7,6 +8,7 @@ const OptionsContainer: React.FC<{ children: React.ReactNode }> = ({ children })
       <Navbar title="Founder Management System"/>
         </div>
       <div className="border-2 border-black col-span-10 h-screen overflow-y-auto">
+         <LoginBar />
         
         {children}
       </div>

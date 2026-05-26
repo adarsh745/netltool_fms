@@ -24,7 +24,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
 
   return (
 
-    <div className="w-full flex flex-col gap-1">
+    <div className="w-full flex flex-col gap-1 mt-2">
 
       <label className="text-sm font-medium text-gray-700">
         {label}
