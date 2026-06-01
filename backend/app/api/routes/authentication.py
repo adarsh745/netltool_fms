@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.schemas.User import UserCreate
-from app.services.authentication_service import check_invitation_token, create_user_for_login, delete_user, get_user_profile, get_users, login_user , register_user
+from app.services.authentication_service import check_invitation_token, create_user_for_login, delete_user, get_user_profile, get_users, login_user , register_user , admin_update_user , get_user_by_id , disable_user , sofl_delete_user
 
 router = APIRouter()
 
@@ -26,6 +26,7 @@ async def create(
 def get_all_users(db:Session = Depends(get_db)):
     try:
         users = get_users(db)
+        
         return {"users" : users}
     except Exception as e:
         httpException = HTTPException(status_code=500 , detail=str(e))
@@ -81,6 +82,50 @@ def login(data:login_schema , db:Session = Depends(get_db)):
     try:
         user = login_user(data , db)
         return user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        httpException = HTTPException(status_code=500, detail=str(e))
+        raise httpException
+    
+@router.put("/admin-user-update/{user_id}")
+def admin_update(data:UserCreate, user_id:int , db:Session = Depends(get_db)):
+    try:
+        user = admin_update_user(data, user_id, db)
+        return {"message":"User successfully created" , "user":user}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        httpException = HTTPException(status_code=500, detail=str(e))
+        raise httpException
+    
+@router.get("/get-user/{user_id}")
+def get_user_details(user_id:int , db:Session=Depends(get_db)):
+    try:
+        user = get_user_by_id(user_id , db)
+        return user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        httpException = HTTPException(status_code=500, detail=str(e))
+        raise httpException
+
+@router.put("/user-disable/{user_id}")
+def admin_disable_user(user_id:int , db:Session=Depends(get_db)):
+    try:
+        disable_user(user_id , db)
+        return {"message":"User disable successfullly"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        httpException = HTTPException(status_code=500, detail=str(e))
+        raise httpException
+    
+@router.put("/delete-user/{user_id}")
+def admin_delete_user(user_id:int , db:Session=Depends(get_db)):
+    try:
+        sofl_delete_user(user_id , db)
+        return {"message":"User delelted successfully"}
     except HTTPException as e:
         raise e
     except Exception as e:

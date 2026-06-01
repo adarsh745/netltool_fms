@@ -93,6 +93,32 @@ const options: NavItem[] = [
     icon: Calender,
     path: "/calendar",
   },
+  
+  // {
+  //   id: 8,
+  //   title: "Tasks",
+  //       icon: Task,
+  //       path: "/tasks",
+  // },
+  // {
+  //   id: 9,
+  //   title: "Calendar",
+  //       icon: Calender,
+  //       path: "/calendar",
+  // },
+  {
+    id:8, 
+    title:"Manage Users" , 
+    icon:Transcript ,
+    path:"/manage-users"
+  },
+  {
+    id:9 ,
+    title:"Manage Roles", 
+    icon:Blogs , 
+    path:"/manage-roles"
+  },
+
   {
     id: 10,
     title: "Settings",

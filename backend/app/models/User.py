@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean , ForeignKey
 from app.db.database import base
 import datetime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship 
 
 
 class User(base):
@@ -30,7 +30,7 @@ class User(base):
 
     phone = Column(String, nullable=True)
 
-    role = Column(Integer, nullable=False)
+    role_id = Column(Integer, ForeignKey("roles.id"))
 
     is_register = Column(Boolean, default=False)
 
@@ -43,3 +43,7 @@ class User(base):
     invitation_expiry = Column(DateTime, nullable=True)
 
     blogs = relationship("Blog", back_populates="user")
+    role = relationship(
+        "Role",
+        back_populates="users"
+    )
