@@ -12,7 +12,6 @@ const buttonStyles = cva(
   {
     variants: {
       variant: {
-        // Filled
         primary:
           "bg-[#0f0f0f] text-white hover:bg-[#2a2a2a] active:scale-[0.98] shadow-sm",
         secondary:
@@ -21,33 +20,25 @@ const buttonStyles = cva(
           "bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-400 active:scale-[0.98]",
         ghost:
           "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:scale-[0.98]",
-
-        // Outline
         outline:
           "bg-transparent border border-gray-300 text-gray-700 hover:border-gray-500 hover:text-gray-900 active:scale-[0.98]",
         outlineDark:
           "bg-transparent border border-[#0f0f0f] text-[#0f0f0f] hover:bg-[#0f0f0f] hover:text-white active:scale-[0.98]",
-
-        // Legacy aliases (keep existing usage working)
         long: "bg-[#0f0f0f] text-white hover:bg-[#2a2a2a] active:scale-[0.98] shadow-sm",
         longOutline:
           "bg-transparent border border-gray-300 text-gray-700 hover:border-gray-500 hover:text-gray-900 active:scale-[0.98]",
       },
-
       size: {
         xs: "text-xs px-2.5 py-1.5 rounded-md",
         sm: "text-xs px-3.5 py-2",
         md: "text-sm px-4 py-2.5",
         lg: "text-sm px-6 py-3",
         xl: "text-base px-8 py-3.5",
-
-        // icon-only sizes
         iconXs: "text-xs p-1.5 rounded-md",
         iconSm: "text-sm p-2",
         iconMd: "text-sm p-2.5",
         iconLg: "text-base p-3",
       },
-
       wide: {
         true: "w-full",
         false: "",
@@ -59,6 +50,42 @@ const buttonStyles = cva(
       wide: false,
     },
   }
+);
+
+// Spinner stroke colors per variant
+const spinnerColorMap: Record<string, string> = {
+  primary: "stroke-white",
+  long: "stroke-white",
+  secondary: "stroke-gray-500",
+  danger: "stroke-red-500",
+  ghost: "stroke-gray-500",
+  outline: "stroke-gray-600",
+  outlineDark: "stroke-[#0f0f0f]",
+  longOutline: "stroke-gray-600",
+};
+
+const Spinner = ({ variant = "primary" }: { variant?: string }) => (
+  <svg
+    className={`animate-spin shrink-0 ${spinnerColorMap[variant] ?? "stroke-white"}`}
+    width="15"
+    height="15"
+    viewBox="0 0 15 15"
+    fill="none"
+    aria-hidden="true"
+  >
+    <circle
+      cx="7.5"
+      cy="7.5"
+      r="6"
+      strokeWidth="2"
+      className="opacity-25"
+    />
+    <path
+      d="M7.5 1.5a6 6 0 0 1 6 6"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
 );
 
 interface ButtonProps {
@@ -78,6 +105,8 @@ interface ButtonProps {
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "iconXs" | "iconSm" | "iconMd" | "iconLg";
   wide?: boolean;
   disabled?: boolean;
+  isLoading?: boolean;
+  loadingText?: string;
   type?: "button" | "submit" | "reset";
 }
 
@@ -86,25 +115,41 @@ const Button = ({
   icon,
   iconPosition = "left",
   onClick,
-  variant,
+  variant = "primary",
   size,
   wide,
   disabled,
+  isLoading = false,
+  loadingText,
   type = "button",
 }: ButtonProps) => {
+  const isDisabled = disabled || isLoading;
+
   return (
     <button
       type={type}
       className={buttonStyles({ variant, size, wide })}
       onClick={onClick}
-      disabled={disabled}
+      disabled={isDisabled}
+      aria-busy={isLoading}
     >
-      {icon && iconPosition === "left" && (
-        <span className="shrink-0">{icon}</span>
-      )}
-      {text && <span>{text}</span>}
-      {icon && iconPosition === "right" && (
-        <span className="shrink-0">{icon}</span>
+      {isLoading ? (
+        <>
+          <Spinner variant={variant} />
+          {(loadingText ?? text) && (
+            <span>{loadingText ?? text}</span>
+          )}
+        </>
+      ) : (
+        <>
+          {icon && iconPosition === "left" && (
+            <span className="shrink-0">{icon}</span>
+          )}
+          {text && <span>{text}</span>}
+          {icon && iconPosition === "right" && (
+            <span className="shrink-0">{icon}</span>
+          )}
+        </>
       )}
     </button>
   );

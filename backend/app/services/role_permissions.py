@@ -93,5 +93,16 @@ def get_all_permissions(db:Session):
     except Exception as e:
         raise HTTPException(status_code=500 , detail=str(e))
     
+def get_all_roles(db:Session):
+    try:
+        roles = db.query(Role).all()
+        return roles
+    except Exception as e:
+        raise HTTPException(status_code=500 , details=str(e))
 
-
+def get_roles_permissions(db:Session):
+    try:
+        rolesPermissions = db.query(RolePermission).all()
+        return rolesPermissions
+    except Exception as e:
+        raise HTTPException(status_code=500 , details=str(e))

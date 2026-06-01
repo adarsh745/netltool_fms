@@ -11,7 +11,7 @@ from app.utils.auth_config import SECRET_KEY, ALGORITHM, INVITATION_URL
 
 from app.schemas.User import UserCreate, UserRegister
 from app.models.User import User
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session , joinedload
 from app.services.mail_service import send_mail
 from app.utils.mail_config import mail_config
 from app.schemas.email_schema import EmailRequest
@@ -54,7 +54,7 @@ async def create_user_for_login(user: UserCreate, db: Session):
     db_user = User(
         email=user.email,
         first_name=user.first_name,
-        role=user.role
+        role_id=user.role_id
     )
 
     db.add(db_user)
@@ -63,7 +63,7 @@ async def create_user_for_login(user: UserCreate, db: Session):
 
     # NOW id exists
     invitation_token = create_access_token(
-        {"user_id": db_user.id , "role" : db_user.role} , expire_timedelta=timedelta(hours=24)
+        {"user_id": db_user.id , "role" : db_user.role_id} , expire_timedelta=timedelta(hours=24)
     )
 
     db_user.invitation_token = invitation_token
@@ -87,7 +87,9 @@ async def create_user_for_login(user: UserCreate, db: Session):
 def login_user(data:login_schema , db:Session):
     try:
         user = db.query(User).filter(User.email == data.email).first()
-        if not user:
+        if not user.is_active:
+            raise HTTPException(status_code=401 , detail="Our account is disabled")
+        if not user or user.is_deleted:
             raise HTTPException(status_code=404 , detail="User not found")
         verify = verify_password(data.password , user.password)
         if not verify:
@@ -133,7 +135,12 @@ def register_user(data:UserRegister , invitation_token:str , db:Session):
 # get user 
 def get_users(db:Session):
     try:
-        return db.query(User).all()
+        users = (
+        db.query(User)
+        .options(joinedload(User.role))
+        .all()
+        )   
+        return users
     except Exception as e:
         raise HTTPException(status_code=500 , detail=str(e))
     
@@ -174,5 +181,51 @@ def get_user_profile(token:str , db:Session):
     except Exception as e:
         raise HTTPException(status_code=500 , detail=str(e))
     
+def admin_update_user(data:UserCreate , user_id:int , db:Session):
+    try:
+        user = db.query(User).filter(User.id==user_id).first()
+        user.email=data.email
+        user.role_id=data.role_id
+        user.first_name = data.first_name
+        db.commit()
+        db.refresh(user)
+        return user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500 , detail=str(e))
+    
+
+def get_user_by_id(user_id:int , db:Session):
+    try:
+        user = db.query(User).filter(User.id==user_id).first()
+        return user 
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500 , detail=str(e))
+
+def disable_user(user_id:int , db:Session):
+    try:
+        user = db.query(User).filter(User.id==user_id).first()    
+        user.is_active = not user.is_active
+        db.commit()
+        db.refresh(user)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500 , detail=str(e))
+    
+def sofl_delete_user(user_id:int , db:Session):
+    try:
+        user = db.query(User).filter(User.id==user_id).first()
+        user.is_deleted = not user.is_deleted 
+        db.commit()
+        db.refresh(user)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500 , detail=str(e))
+
 
 
