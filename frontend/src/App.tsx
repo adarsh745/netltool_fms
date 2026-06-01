@@ -10,6 +10,9 @@ import Blogs from "./pages/Blogs";
 import Projects from "./pages/Projects";
 import BlogEditor from "./pages/BlogEditor";
 import Video from "./pages/Video";
+import Videos from "./pages/Videos";
+import VideoDetails from "./pages/VideoDetails";
+import ComingSoon from "./pages/ComingSoon";
 import ProjectUpdates from "./pages/ProjectUpdates";
 import Settings from "./pages/Settings";
 import ManageUsers from "./pages/ManageUsers";
@@ -46,7 +49,25 @@ function App() {
         <Route
           path="/studio"
           element={
+            <Videos/>
+          }
+        />
+        <Route
+          path="/video-recorder"
+          element={
             <Video/>
+          }
+        />
+        <Route
+          path="/videos"
+          element={
+            <Videos/>
+          }
+        />
+        <Route
+          path="/videos/:id"
+          element={
+            <VideoDetails/>
           }
         />
         <Route 
@@ -65,6 +86,11 @@ function App() {
         <Route path="/manage-roles" element={<ManageRoles />} />
 
         <Route path="/settings" element={<Settings/>} />
+        
+        <Route path="/transcripts" element={<ComingSoon title="Transcripts" />} />
+        <Route path="/hardwarecomponents" element={<ComingSoon title="Hardware Components" />} />
+        <Route path="/tasks" element={<ComingSoon title="Tasks" />} />
+        <Route path="/calendar" element={<ComingSoon title="Calendar" />} />
       </Routes>
           
     </div>
