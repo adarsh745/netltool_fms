@@ -10,15 +10,18 @@ import { BrowserRouter } from "react-router-dom";
 
 import "./index.css";
 import { store } from "../store";
+import { AppProvider } from "./context/AppDate";
 
 ReactDOM.createRoot(
   document.getElementById("root")!
 ).render(
   <React.StrictMode>
+    <AppProvider>
     <StoreProvider store={store}>
       <BrowserRouter>
         <App />
       </BrowserRouter>
     </StoreProvider>
+    </AppProvider>
   </React.StrictMode>
 );

@@ -1,7 +1,7 @@
 from fastapi import APIRouter , Depends , HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.services.role_permissions import create_role , create_permission , assign_permission_to_role, get_all_permissions, get_permissions_for_role
+from app.services.role_permissions import create_role , create_permission , assign_permission_to_role, get_all_permissions, get_permissions_for_role , get_all_roles,get_roles_permissions
 from app.schemas.role_permission import assign_permission_to_role_validation, create_permission_validation, creater_role_validation
 
 router = APIRouter()
@@ -42,7 +42,7 @@ def get_permissions_for_role_endpoint(role_id:int , db:Session = Depends(get_db)
         httpException = HTTPException(status_code=500 , detail=str(e))
         raise httpException
     
-@router.get("/get-all-permissions")
+@router.get("/permissions")
 def get_all_permissions_endpoint(db:Session = Depends(get_db)):
     try:
         permissions = get_all_permissions(db)
@@ -51,3 +51,20 @@ def get_all_permissions_endpoint(db:Session = Depends(get_db)):
         httpException = HTTPException(status_code=500 , detail=str(e))
         raise httpException
     
+@router.get("/roles")
+def get_roles(db:Session=Depends(get_db)):
+    try:
+        roles = get_all_roles(db)
+        return roles
+    except Exception as e:
+        httpException = HTTPException(status_code=500 , detail=str(e))
+        raise httpException
+    
+@router.get("/role-permissions")
+def get_roles_and_permissions(db:Session=Depends(get_db)):
+    try:
+        roles_permission = get_roles_permissions(db=db)
+        return roles_permission
+    except Exception as e:
+        httpException = HTTPException(status_code=500 , detail=str(e))
+        raise httpException
