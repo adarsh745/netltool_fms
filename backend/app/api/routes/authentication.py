@@ -1,11 +1,12 @@
 from app.schemas.user_schema import login_schema
-from fastapi import APIRouter , Depends , HTTPException , Header
+from app.utils.profile_upload import validate_profile_image , upload_profile_image
+from fastapi import APIRouter , Depends , HTTPException , Header , UploadFile , File , Form
 from app.schemas.User import UserCreate, UserRegister
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.schemas.User import UserCreate
-from app.services.authentication_service import check_invitation_token, create_user_for_login, delete_user, get_user_profile, get_users, login_user , register_user , admin_update_user , get_user_by_id , disable_user , sofl_delete_user , get_user_login_details
+from app.services.authentication_service import check_invitation_token, create_user_for_login, delete_user, get_user_profile, get_users, login_user , register_user , admin_update_user , get_user_by_id , disable_user , sofl_delete_user , get_user_login_details, verify_access_token
 
 router = APIRouter()
 
@@ -42,23 +43,33 @@ def delete(user_id:int , db:Session = Depends(get_db)):
         raise httpException
     
 @router.put("/register-user")
-def register(data:UserRegister , authorization: str = Header(...), db:Session = Depends(get_db)):
+def register(
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    phone: str = Form(...),
+    company: str = Form(None),
+    password: str = Form(...),
+    profile_image: UploadFile = Depends(validate_profile_image),
+    authorization: str = Header(...),
+    db: Session = Depends(get_db)):
     try:
         token = authorization.replace("Bearer ", "")
         print("this is the token we are getting in the header " , token)
-        user = register_user(data , token , db)
+        user = verify_access_token(token)
+        profile_image_path = upload_profile_image(profile_image, user["user_id"])
+        user = register_user({" ":user["user_id"], "first_name": first_name, "last_name": last_name, "phone": phone, "company": company, "avatar_url": profile_image_path, "password": password}, token , db)
         return {"message" : "User registered successfully" , "user" : user}
     except Exception as e:
         httpException = HTTPException(status_code=500 , detail=str(e))
         raise httpException
     
 @router.get("/check-invitation-token")
-def check_token_validation(authorization:str = Header(...)):
+def check_token_validation(authorization:str = Header(...), db:Session = Depends(get_db)):
     try:
         token = authorization.replace("Bearer ", "")
         print("this is the token we are getting in the header" , token)
-        user_id = check_invitation_token(token)
-        return {"message" : "Token is valid" , "user_id" : user_id}
+        user = check_invitation_token(token , db)
+        return {"message" : "Token is valid" , "user" : user}
     except HTTPException as e:
         raise e
     except Exception as e:
