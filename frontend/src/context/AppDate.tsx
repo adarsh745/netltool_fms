@@ -81,6 +81,7 @@ export function AppProvider({children}:{children:react.ReactNode}){
             setIsLoggedIn(true);
             console.log('Login successful:', reponse.data);
             toast.success('Login successful!');
+            checkLoggedIn();
             navigate('/' , {replace:true});
             
         }catch(error){
