@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAppData } from "../../context/AppDate";
 
 export function ProfileDropdown() {
+  
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -16,7 +17,7 @@ export function ProfileDropdown() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const {user} = useAppData();
+  const {user , logout} = useAppData();
 
   console.log('ProfileDropdown - user:', user);
 
@@ -67,7 +68,7 @@ export function ProfileDropdown() {
           {/* Logout */}
           <div className="p-1.5 border-t border-gray-100">
             <button
-              onClick={() => { /* handle logout */ }}
+              onClick={logout}
               className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors text-left"
             >
               <LogOutIcon />

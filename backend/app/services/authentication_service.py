@@ -16,31 +16,8 @@ from app.services.mail_service import send_mail
 from app.utils.mail_config import mail_config
 from app.schemas.email_schema import EmailRequest
 
+from app.utils.session_creator import create_access_token, verify_access_token
 
-
-def create_access_token(data:dict , expire_timedelta:timedelta = None):
-
-    to_encode = data.copy()
-
-    expire = datetime.utcnow() + (expire_timedelta or timedelta(hours=1))
-
-    to_encode.update({"exp" : expire})
-
-    encoded_jwt = jwt.encode(to_encode , SECRET_KEY , algorithm=ALGORITHM)
-
-    return encoded_jwt
-
-def verify_access_token(token:str):
-    try:
-        payload = jwt.decode(token , SECRET_KEY , algorithms=[ALGORITHM])
-        user_id = payload.get("user_id")
-        if user_id is None:
-            raise HTTPException(status_code=401 , detail="Invalid token")
-        return payload
-    except ExpiredSignatureError:
-        raise HTTPException(status_code=401 , detail="Token has expired")
-    except JWTError:
-        raise HTTPException(status_code=401 , detail="Invalid token")
 
 async def create_user_for_login(user: UserCreate, db: Session):
 
@@ -103,7 +80,7 @@ def login_user(data:login_schema , db:Session):
 
 
 # register user 
-def register_user(data:UserRegister , invitation_token:str , db:Session):
+def register_user(data: dict, invitation_token:str , db:Session):
     try:
         user= verify_access_token(invitation_token)
         user = db.query(User).filter(User.id == user["user_id"]).first()
@@ -112,12 +89,13 @@ def register_user(data:UserRegister , invitation_token:str , db:Session):
         if user.is_register:
             raise HTTPException(status_code=400 , detail="User already registered")
         
-        user.password = hash_password(data.password)
-        user.avatar_url = data.avatar_Url
-        user.company = data.company
-        user.first_name = data.first_name
-        user.last_name = data.last_name
-        user.phone = data.phone
+        print("this is the data we are getting in the register user function" , data) 
+        user.password = hash_password(data["password"])
+        user.avatar_url = data["avatar_url"]
+        user.company = data["company"]
+        user.first_name = data["first_name"]
+        user.last_name = data["last_name"]
+        user.phone = data["phone"]
         user.is_register = True
 
         db.commit()
@@ -158,10 +136,11 @@ def delete_user(db:Session , user_id:int):
         raise HTTPException(status_code=500 , detail=str(e))
 
 # check token expr and expiry for invitation link
-def check_invitation_token(token:str):
+def check_invitation_token(token:str , db:Session):
     try:
         user = verify_access_token(token)
-        return user["user_id"]
+        user_details=get_user_by_id(user["user_id"] , db)
+        return user_details
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -183,7 +162,7 @@ def get_user_profile(token:str , db:Session):
     
 def admin_update_user(data:UserCreate , user_id:int , db:Session):
     try:
-        user = db.query(User).filter(User.id==user_id).first()
+        user = db.query(User).options(joinedload(User.role)).filter(User.id==user_id).first()
         user.email=data.email
         user.role_id=data.role_id
         user.first_name = data.first_name
@@ -198,7 +177,7 @@ def admin_update_user(data:UserCreate , user_id:int , db:Session):
 
 def get_user_by_id(user_id:int , db:Session):
     try:
-        user = db.query(User).filter(User.id==user_id).first()
+        user = db.query(User).options(joinedload(User.role)).filter(User.id==user_id).first()
         return user 
     except HTTPException as e:
         raise e
