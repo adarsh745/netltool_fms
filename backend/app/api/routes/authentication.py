@@ -1,12 +1,16 @@
 from app.schemas.user_schema import login_schema
 from app.utils.profile_upload import validate_profile_image , upload_profile_image
 from fastapi import APIRouter , Depends , HTTPException , Header , UploadFile , File , Form
-from app.schemas.User import UserCreate, UserRegister
+from app.schemas.User import UserCreate, UserRegister, requestResetPassword
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from app.db.database import get_db
 from app.schemas.User import UserCreate
-from app.services.authentication_service import check_invitation_token, create_user_for_login, delete_user, get_user_profile, get_users, login_user , register_user , admin_update_user , get_user_by_id , disable_user , sofl_delete_user , get_user_login_details, verify_access_token
+from app.services.authentication_service import check_invitation_token, create_user_for_login, delete_user, get_user_profile, get_users, login_user , register_user , admin_update_user , get_user_by_id , disable_user, reset_password, send_reset_password_mail , sofl_delete_user , get_user_login_details, verify_access_token , update_user_profile
+from app.utils.session_creator import verify_access_token_auth
+from app.middleware.permission_dependency import require_permission
+from app.constants.permissions import Permissions
 
 router = APIRouter()
 
@@ -14,6 +18,7 @@ router = APIRouter()
 @router.post("/create-user-for-login")
 async def create(
     user : UserCreate,
+    current_user:str = Depends(require_permission(Permissions.USER_CREATE)),
     db : Session = Depends(get_db)
 ):
     try:
@@ -122,7 +127,7 @@ def get_user_details(user_id:int , db:Session=Depends(get_db)):
         raise httpException
 
 @router.put("/user-disable/{user_id}")
-def admin_disable_user(user_id:int , db:Session=Depends(get_db)):
+def admin_disable_user(user_id:int ,current_user:str=Depends(require_permission(Permissions.USER_CREATE)), db:Session=Depends(get_db)):
     try:
         disable_user(user_id , db)
         return {"message":"User disable successfullly"}
@@ -133,7 +138,7 @@ def admin_disable_user(user_id:int , db:Session=Depends(get_db)):
         raise httpException
     
 @router.put("/delete-user/{user_id}")
-def admin_delete_user(user_id:int , db:Session=Depends(get_db)):
+def admin_delete_user(user_id:int, current_user:str=Depends(require_permission(Permissions.USER_DELETE)) , db:Session=Depends(get_db)):
     try:
         sofl_delete_user(user_id , db)
         return {"message":"User delelted successfully"}
@@ -155,4 +160,74 @@ def user_details_after_login(authorization: str = Header(...), db: Session = Dep
         httpException = HTTPException(status_code=500, detail=str(e))
         raise httpException
 
+@router.post("/reset-password-request")
+async def request_reset_password(email: requestResetPassword, db: Session = Depends(get_db)):
+    try:
+        result = await send_reset_password_mail(email.email, db)
+        return result
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        httpException = HTTPException(status_code=500, detail=str(e))
+        raise httpException
+    
+@router.post("/reset-password")
+async def reset_password_route(new_password:str = Form(...) , authorization: str = Header(...), db: Session = Depends(get_db)):
+    try:
+        token = authorization.replace("Bearer ", "")
+        print("this is the token we are getting in the header" , token)
+        result = await reset_password(token, new_password, db)
+        return result
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        httpException = HTTPException(status_code=500, detail=str(e))
+        raise httpException
 
+
+
+@router.put("/update-profile")
+def update_profile_route(
+    first_name: Optional[str] = Form(None),
+    last_name: Optional[str] = Form(None),
+    phone: Optional[str] = Form(None),
+    company: Optional[str] = Form(None),
+    profile_image: UploadFile | None = File(None),
+    user=Depends(verify_access_token_auth),
+    db: Session = Depends(get_db)
+):
+    try:
+        update_data = {}
+
+        if first_name is not None:
+            update_data["first_name"] = first_name
+
+        if last_name is not None:
+            update_data["last_name"] = last_name
+
+        if phone is not None:
+            update_data["phone"] = phone
+
+        if company is not None:
+            update_data["company"] = company
+
+        if profile_image:
+            profile_image_path = upload_profile_image(
+                profile_image,
+                user["user_id"]
+            )
+            update_data["avatar_url"] = profile_image_path
+
+        updated_user = update_user_profile(
+            update_data,
+            user["user_id"],
+            db
+        )
+
+        return {
+            "message": "Profile updated successfully",
+            "user": updated_user
+        }
+
+    except HTTPException as e:
+        raise e

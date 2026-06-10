@@ -19,6 +19,8 @@ import ManageUsers from "./pages/ManageUsers";
 import ManageRoles from "./pages/ManageRoles";
 import BlogDetails from "./pages/BlogDetails";
 import ProtectedRoute from "./components/Home/ProtectedRoute";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
 
@@ -40,6 +42,8 @@ function App() {
             <Register />
           }
         />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword/>}/>
       <Route element={<ProtectedRoute/>}>
         <Route
           path="/"
