@@ -148,7 +148,7 @@ const Register = () => {
             {verifiedUser?.role?.name || "Default"} Onboarding
           </p>
           <h1 className="text-5xl font-bold text-white leading-tight mb-5">
-            Welcome aboard,
+            Welcome onboard,
             <span className="text-gray-400 ml-2">{verifiedUser?.first_name}</span>
           </h1>
           <p className="text-gray-500 text-lg">
