@@ -35,15 +35,7 @@ function NetlToolNavbar() {
           Blog
         </span>
       </div>
-      <div className="flex items-center gap-2">
-        <button className="hidden rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-800 sm:flex">
-          Browse posts
-        </button>
-        <div className="h-5 w-px bg-gray-200" />
-        <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-800">
-          Sign in
-        </button>
-      </div>
+      
     </nav>
   );
 }
@@ -107,7 +99,7 @@ function BlogDetailsSkeleton() {
     <>
       <NetlToolNavbar />
       <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-full">
           <div className="mb-4 h-5 w-28 animate-pulse rounded bg-gray-200" />
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
             <div className="min-w-0 flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -212,16 +204,16 @@ const BlogDetails = () => {
       <NetlToolNavbar />
 
       <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
-        <div className="mx-auto max-w-5xl">
+        <div className="w-full max-w-full">
 
           {/* Back button */}
-          <button
+          {/* <button
             onClick={() => navigate("/blogs")}
             className="mb-4 flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-800"
           >
             <ArrowLeft size={14} />
             Back to blogs
-          </button>
+          </button> */}
 
           {/* Mobile TOC accordion — shows only when tocItems exist */}
           {tocItems.length > 0 && (
@@ -285,7 +277,7 @@ const BlogDetails = () => {
                   <h1 className="flex-1 text-xl font-semibold leading-snug text-gray-900 sm:text-2xl">
                     {blog.title}
                   </h1>
-                  <div className="flex shrink-0 gap-1.5 pt-0.5">
+                  {/* <div className="flex shrink-0 gap-1.5 pt-0.5">
                     <IconBtn label="Edit post" onClick={() => navigate(`/blog-editor/${id}`)}>
                       <Edit size={14} />
                     </IconBtn>
@@ -295,7 +287,7 @@ const BlogDetails = () => {
                     <IconBtn label="Share post">
                       <Share2 size={14} />
                     </IconBtn>
-                  </div>
+                  </div> */}
                 </div>
 
                 {blog.summary && (

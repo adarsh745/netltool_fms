@@ -40,14 +40,14 @@ const Blogs = () => {
   const navigate = useNavigate()
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [copiedId, setCopiedId] = useState("")
-  const [confirModal , setConfirmModal] = useState(false)
-  const [selectedTitle , setSelectedTitle ] = useState("")
-  const [selectedId , setselectedId] = useState<null|string>(null)
+  const [confirModal, setConfirmModal] = useState(false)
+  const [selectedTitle, setSelectedTitle] = useState("")
+  const [selectedId, setselectedId] = useState<null | string>(null)
 
   // service apis
   const { data, isLoading, isError, error } = useGetBlogsQuery("blogs")
   console.log("Blogs data: ", data, isLoading,)
-  const [deleteBlog , {isLoading:deleting , isError:deleteError}]  = useDeleteBlogMutation()
+  const [deleteBlog, { isLoading: deleting, isError: deleteError }] = useDeleteBlogMutation()
 
   const handleCreateNewBlog = () => {
     navigate("/blog-editor");
@@ -78,8 +78,19 @@ const Blogs = () => {
         <p>{row?.user?.first_name}</p>
       )
     },
-
-    { key: "summary", label: "Summary" },
+    {
+      key: "summary",
+      label: "Summary",
+      render: (_: any, row: any) => {
+        return (
+          <div className="w-52">
+            <p className="whitespace-normal break-words">
+              {row?.summary?.slice(0, 50)}...
+            </p>
+          </div>
+        );
+      },
+    },
     {
       key: "created_at", label: "Date",
       render: (_: any, row: any) => (
@@ -157,15 +168,15 @@ const Blogs = () => {
 
                 <span
                   className={`transition-all duration-300 ${copiedId === row.id
-                      ? "text-green-600 font-medium"
-                      : "text-gray-700"
+                    ? "text-green-600 font-medium"
+                    : "text-gray-700"
                     }`}
                 >
                   {copiedId === row.id ? "✓ Copied!" : "Copy Link"}
                 </span>
               </button>
 
-              <button className="flex w-full items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50" onClick={()=>{
+              <button className="flex w-full items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50" onClick={() => {
                 setConfirmModal(true)
                 setSelectedTitle(row?.title)
                 setselectedId(row.id)
@@ -204,48 +215,49 @@ const Blogs = () => {
   return <div>
 
     {/* model to confirmation delete */}
-  <Modal
-  isOpen={confirModal}
-  onClose={() => {setConfirmModal(false)
-    setSelectedTitle("")
-    setselectedId(null)
-  }}
->
-  <div className="p-6">
-    <h2 className="text-lg font-semibold text-gray-900">
-      Delete Blog
-    </h2>
+    <Modal
+      isOpen={confirModal}
+      onClose={() => {
+        setConfirmModal(false)
+        setSelectedTitle("")
+        setselectedId(null)
+      }}
+    >
+      <div className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Delete Blog
+        </h2>
 
-    <p className="mt-2 text-sm text-gray-600">
-      Are you sure you want to delete this blog ? <br />{selectedTitle} <br /> This action cannot be undone.
-    </p>
+        <p className="mt-2 text-sm text-gray-600">
+          Are you sure you want to delete this blog ? <br />{selectedTitle} <br /> This action cannot be undone.
+        </p>
 
-    <div className="mt-6 flex justify-end gap-3">
-      <button
-        onClick={() => setConfirmModal(false)}
-        className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-      >
-        Cancel
-      </button>
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={() => setConfirmModal(false)}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            Cancel
+          </button>
 
-      <Button
-      text='Delete blog'
-        onClick={async () => {
-          try {
-            await deleteBlog(selectedId); // your delete API call
-            setConfirmModal(false);
-          } catch (error) {
-            console.error(error);
-          }
-        }}
-       variant='danger'
-       isLoading={deleting}
-      />
-      
-      
-    </div>
-  </div>
-</Modal>
+          <Button
+            text='Delete blog'
+            onClick={async () => {
+              try {
+                await deleteBlog(selectedId); // your delete API call
+                setConfirmModal(false);
+              } catch (error) {
+                console.error(error);
+              }
+            }}
+            variant='danger'
+            isLoading={deleting}
+          />
+
+
+        </div>
+      </div>
+    </Modal>
     <OptionsContainer>
       <div className="p-6" >
         <div className="flex flex-row justify-between mb-4">

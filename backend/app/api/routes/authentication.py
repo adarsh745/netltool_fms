@@ -75,14 +75,23 @@ def register(
     phone: str = Form(...),
     company: str = Form(None),
     password: str = Form(...),
-    profile_image: UploadFile = Depends(validate_profile_image),
+    profile_image: Optional[UploadFile] = File(None),
     authorization: str = Header(...),
     db: Session = Depends(get_db)):
     try:
         token = authorization.replace("Bearer ", "")
         print("this is the token we are getting in the header " , token)
         user = verify_access_token(token)
-        profile_image_path = upload_profile_image(profile_image, user["user_id"])
+        
+
+        profile_image_path = None
+
+        if profile_image:
+            validate_profile_image(profile_image)
+            profile_image_path = upload_profile_image(
+                profile_image,
+                user["user_id"]
+            )
         user = register_user({" ":user["user_id"], "first_name": first_name, "last_name": last_name, "phone": phone, "company": company, "avatar_url": profile_image_path, "password": password}, token , db)
         return {"message" : "User registered successfully" , "user" : user}
     except Exception as e:
