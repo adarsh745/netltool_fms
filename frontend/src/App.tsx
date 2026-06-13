@@ -13,7 +13,7 @@ import Video from "./pages/Video";
 import Videos from "./pages/Videos";
 import VideoDetails from "./pages/VideoDetails";
 import ComingSoon from "./pages/ComingSoon";
-import ProjectUpdates from "./pages/ProjectUpdates";
+// import ProjectUpdates from "./pages/ProjectUpdates";
 import Settings from "./pages/Settings";
 import ManageUsers from "./pages/ManageUsers";
 import ManageRoles from "./pages/ManageRoles";
@@ -86,7 +86,7 @@ function App() {
         />
         <Route path="/blog-editor" element={<BlogEditor/>} />
 
-        <Route path="/project-updates/:projectId" element={<ProjectUpdates />} />
+        {/* <Route path="/project-updates/:projectId" element={<ProjectUpdates />} /> */}
 
         <Route path="/manage-users" element={<ManageUsers />} />
         <Route path="/manage-roles" element={<ManageRoles />} />
