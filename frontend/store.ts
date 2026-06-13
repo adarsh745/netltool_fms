@@ -1,15 +1,20 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { blogApi } from "./src/services/api/blogSlice";
 import { usersApi } from "./src/services/api/userSlice";
+import { rolePermissionRoleSlice } from "./src/services/api/rolePermissionSlice";
+import projectReducer from "./src/services/api/projectSlice";
+
 
 
 export const store = configureStore({
   reducer: {
     [blogApi.reducerPath]: blogApi.reducer,
-    [usersApi.reducerPath]:usersApi.reducer
+    [usersApi.reducerPath]:usersApi.reducer,
+    [rolePermissionRoleSlice.reducerPath]:rolePermissionRoleSlice.reducer,
+    projects: projectReducer
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(blogApi.middleware).concat(usersApi.middleware),
+    getDefaultMiddleware().concat(blogApi.middleware).concat(usersApi.middleware).concat(rolePermissionRoleSlice.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

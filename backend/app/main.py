@@ -1,12 +1,17 @@
+from fastapi.staticfiles import StaticFiles
+
 from app.api.api_router import api_router 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 origins = [
     "http://localhost",
     "http://localhost:5173",
+    "https://fms.netltool.com"
 ]
 
 app.add_middleware(

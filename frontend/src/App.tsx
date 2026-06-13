@@ -13,16 +13,18 @@ import Video from "./pages/Video";
 import Videos from "./pages/Videos";
 import VideoDetails from "./pages/VideoDetails";
 import ComingSoon from "./pages/ComingSoon";
-import ProjectUpdates from "./pages/ProjectUpdates";
+// import ProjectUpdates from "./pages/ProjectUpdates";
 import Settings from "./pages/Settings";
 import ManageUsers from "./pages/ManageUsers";
 import ManageRoles from "./pages/ManageRoles";
 import BlogDetails from "./pages/BlogDetails";
+import ProtectedRoute from "./components/Home/ProtectedRoute";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import BlogEdit from "./pages/BlogEdit";
 
 function App() {
 
-  const [isLoggedIn, setIsLoggedIn] =
-    useState(false);
 
   return (
 
@@ -32,7 +34,7 @@ function App() {
         <Route
           path="/login"
           element={
-            <Login setIsLoggedIn={setIsLoggedIn} />
+            <Login  />
           }
         />
         <Route 
@@ -41,6 +43,10 @@ function App() {
             <Register />
           }
         />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword/>}/>
+         <Route path="/blog/:id" element={<BlogDetails/>} />
+      <Route element={<ProtectedRoute/>}>
         <Route
           path="/"
           element={
@@ -81,8 +87,9 @@ function App() {
         element={<Projects/>}
         />
         <Route path="/blog-editor" element={<BlogEditor/>} />
+        <Route path="/blog-editor/:id" element={<BlogEdit/>} />
 
-        <Route path="/project-updates/:projectId" element={<ProjectUpdates />} />
+        {/* <Route path="/project-updates/:projectId" element={<ProjectUpdates />} /> */}
 
         <Route path="/manage-users" element={<ManageUsers />} />
         <Route path="/manage-roles" element={<ManageRoles />} />
@@ -93,8 +100,9 @@ function App() {
         <Route path="/hardwarecomponents" element={<ComingSoon title="Hardware Components" />} />
         <Route path="/tasks" element={<ComingSoon title="Tasks" />} />
         <Route path="/calendar" element={<ComingSoon title="Calendar" />} />
-        <Route path="/blog/:id" element={<BlogDetails/>} />
+       
         <Route path="/notifications" element={<ComingSoon title="Notifications" />} />
+        </Route>
       </Routes>
           
     </div>
