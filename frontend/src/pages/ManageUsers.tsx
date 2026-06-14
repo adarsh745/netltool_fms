@@ -310,7 +310,7 @@ const ActionDropdown = ({ row  , setIsOpen , setUserId , setIsDelete  , setIsDis
       try {
        
 
-        const response = await resendInvitation(row.id);
+        const response = await resendInvitation(row.id).unwrap();
 
         toast.success(
           response?.message || "Invitation resent successfully"
@@ -397,7 +397,115 @@ function ManageUsers(){
         console.error("Error in deleting user" , error)
       }
     }
-    
+
+    const renderMobileCard = (row: any) => {
+      const initials = `${row.first_name?.[0] ?? ""}${row.last_name?.[0] ?? ""}`.toUpperCase();
+      const base_url = (import.meta as any).env.VITE_BASE_URL;
+      const avatarSrc = row.avatar_url
+        ? `${base_url}${row.avatar_url.replace(/\\/g, "/")}`
+        : null;
+
+      let statusBadge;
+      if (row.is_deleted) {
+        statusBadge = (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-red-50 text-red-650 border border-red-200">
+            🔴 Deleted
+          </span>
+        );
+      } else if (!row.is_register) {
+        statusBadge = (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+            🟡 Pending
+          </span>
+        );
+      } else {
+        statusBadge = row.is_active ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-green-50 text-green-700 border border-green-200">
+            🟢 Active
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-gray-50 text-gray-500 border border-gray-200">
+            ⚪ Inactive
+          </span>
+        );
+      }
+
+      return (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs flex flex-col font-sans hover:border-gray-300 transition-all select-none gap-2">
+          {/* Top Section: Avatar + Name/Role + Action Menu */}
+          <div className="flex items-center justify-between pb-2.5 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              {/* Avatar */}
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt={initials}
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gray-100 ring-2 ring-gray-100 flex items-center justify-center text-sm font-semibold text-gray-500 select-none">
+                  {initials || "?"}
+                </div>
+              )}
+              {/* Name & Role */}
+              <div className="flex flex-col">
+                <span className={`text-sm font-bold text-gray-900 leading-tight ${row.is_deleted ? "line-through text-gray-400" : ""}`}>
+                  {row.first_name} {row.last_name}
+                </span>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
+                  {row.role?.name ?? "—"}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions dropdown */}
+            <div onClick={(e) => e.stopPropagation()}>
+              <ActionDropdown
+                userId={userId}
+                setIsDelete={setIsDelete}
+                setIsDisable={setIsDisable}
+                setIsOpen={setIsOpen}
+                setUserId={setUserId}
+                row={row}
+              />
+            </div>
+          </div>
+
+          {/* Email Section */}
+          <div className="py-2 border-b border-gray-100 flex flex-col gap-0.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              Email
+            </span>
+            <span className="text-sm text-gray-700 font-medium truncate max-w-full">
+              {row.email}
+            </span>
+          </div>
+
+          {/* Two-Column Grid: Role & Status */}
+          <div className="grid grid-cols-2 py-2 border-b border-gray-100 gap-4">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                Role
+              </span>
+              <span className="text-sm text-gray-700 font-semibold">
+                {row.role?.name ?? "—"}
+              </span>
+            </div>
+            <div className="flex flex-col gap-0.5 items-start">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">
+                Status
+              </span>
+              {statusBadge}
+            </div>
+          </div>
+
+          {/* Bottom Section: ID */}
+          <div className="pt-2 flex items-center justify-between text-xs text-gray-400 font-semibold font-mono">
+            <span>ID: #{row.id}</span>
+          </div>
+        </div>
+      );
+    };
 
    const column = [
   {
@@ -412,9 +520,13 @@ function ManageUsers(){
     label: "",
     render: (_: any, row: any) => {
       const initials = `${row.first_name?.[0] ?? ""}${row.last_name?.[0] ?? ""}`.toUpperCase();
-      return row.avatar_url ? (
+      const base_url = (import.meta as any).env.VITE_BASE_URL;
+      const avatarSrc = row.avatar_url
+        ? `${base_url}${row.avatar_url.replace(/\\/g, "/")}`
+        : null;
+      return avatarSrc ? (
         <img
-          src={row.avatar_url}
+          src={avatarSrc}
           alt={initials}
           className="w-8 h-8 rounded-full object-cover ring-1 ring-gray-200"
         />
@@ -428,6 +540,7 @@ function ManageUsers(){
   {
     key: "name",
     label: "Name",
+    wrap: true,
     render: (_: any, row: any) => (
       <div className="flex flex-col">
         <span
@@ -452,6 +565,7 @@ function ManageUsers(){
   {
     key: "email",
     label: "Email",
+    wrap: true,
     render: (_: any, row: any) => (
       <span className={`text-sm ${row.is_deleted ? "text-gray-400 line-through" : "text-gray-600"}`}>
         {row.email}
@@ -533,7 +647,7 @@ function ManageUsers(){
           setIsDelete(false)
          }} />
         <div className='p-6'>
-            <div className="flex flex-row justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                     <div>
                        <h1 className="text-2xl font-bold text-gray-900 mb-1">
                           Manage User and permissions
@@ -551,7 +665,7 @@ function ManageUsers(){
                      </div>
 
                 </div>
-            <CustomTable columns={column} data={data.users}/>
+            <CustomTable columns={column} data={data.users} renderMobileCard={renderMobileCard}/>
         </div>
     </OptionsContainer>
 }

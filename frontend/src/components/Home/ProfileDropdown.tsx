@@ -24,6 +24,14 @@ export function ProfileDropdown() {
 
   console.log('ProfileDropdown - user:', user);
 
+  const avatarSrc = user?.avatar_url
+    ? `${(import.meta as any).env.VITE_BASE_URL}${user.avatar_url.replace(/\\/g, "/")}`
+    : null;
+
+  const initials = user
+    ? `${(user.first_name?.[0] || "").toUpperCase()}${(user.last_name?.[0] || "").toUpperCase()}`
+    : "?";
+
   return (
     <div className="relative inline-block" ref={ref}>
       <button
@@ -31,11 +39,17 @@ export function ProfileDropdown() {
         className="flex flex-row items-center gap-3 pl-1 pr-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors duration-150 group"
       >
         <div className="relative flex-shrink-0">
-          <img
-            src={`${(import.meta as any).env.VITE_BASE_URL}${user?.avatar_url}`}
-            alt="profile"
-            className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
-          />
+          {avatarSrc ? (
+            <img
+              src={avatarSrc}
+              alt="profile"
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gray-100 ring-2 ring-gray-100 flex items-center justify-center text-xs font-semibold text-gray-500 select-none">
+              {initials}
+            </div>
+          )}
           <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-white" />
         </div>
         <div className="text-left">

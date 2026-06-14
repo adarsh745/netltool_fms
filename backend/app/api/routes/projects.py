@@ -1,5 +1,5 @@
 from fastapi import APIRouter , Depends , HTTPException
-from app.services.project_service import add_updates_to_project, create_project, delete_update, get_all_projects, get_updates_for_project, update_project, update_update
+from app.services.project_service import add_updates_to_project, create_project, delete_update, get_all_projects, get_updates_for_project, update_project, update_update, delete_project
 from app.api.routes.auth import get_current_user
 from app.db.database import get_db
 from sqlalchemy.orm import Session
@@ -30,6 +30,7 @@ def get_projects(query:str=None ,db: Session = Depends(get_db)):
         # Call the get_all_projects function from the service
 
         projects = get_all_projects(query ,db=db)
+        print("Projects are in Db ",projects)
         return {"message": "Projects retrieved successfully", "projects": projects}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -81,5 +82,13 @@ def delete_update_from_project(update_id:int , current_user: str = Depends(requi
 
         delete_message = delete_update(update_id, db=db)
         return {"message": "Update deleted successfully", "details": delete_message}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/delete/{project_id}")
+def delete_project_route(project_id: int, current_user: str = Depends(require_permission(Permissions.PROJECT_DELETE)), db: Session = Depends(get_db)):
+    try:
+        message = delete_project(project_id, db=db)
+        return message
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

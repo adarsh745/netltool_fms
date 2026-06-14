@@ -165,10 +165,10 @@ const Videos: React.FC = () => {
         </div>
 
         {/* Filter and Action Controls */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
           
           {/* Search Box */}
-          <div className="flex items-center gap-2.5 bg-white border border-gray-200 rounded-xl px-4 py-2.5 w-80 shadow-sm focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all">
+          <div className="flex items-center gap-2.5 bg-white border border-gray-200 rounded-xl px-4 py-2.5 w-full sm:w-80 shadow-sm focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition-all">
             <FiSearch className="text-gray-400 w-4 h-4 shrink-0" />
             <input
               type="text"

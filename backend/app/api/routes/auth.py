@@ -24,5 +24,6 @@ async def register(user: user_schema  , db: Session = Depends(get_db)):
 @router.post("/login")
 async def login(request: login_schema , db: Session = Depends(get_db)):
     user = login_user(login_data=request, db=db)
+    print("User is here" , user)
     return {"message": "Login successful", "user": {"id": user.id, "email": user.email , "avatar_url": user.avatar_url , "company": user.company}}
 

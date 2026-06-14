@@ -1,243 +1,271 @@
-// import React, { useState } from 'react';
-// import UpdateCard, { Update } from '../components/Project/UpdateCard';
-// import {useNavigate} from 'react-router-dom'
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
+import OptionsContainer from "../components/UI/OptionsContainer";
+import UpdateCard, { Update } from "../components/Project/UpdateCard";
+import { UpdateProjectModal } from "../components/Project/UpdateProjectModal";
+import restaurantThumbnail from "../assets/restaurant_thumbnail.png";
 
-// const MOCK_UPDATES: Update[] = [
-//   {
-//     id: 'a1b2c3d4e5f6',
-//     message: 'Authentication System Added',
-//     description: 'Added login, register and forgot password functionality.',
-//     timestamp: '12 May 2026 · 10:30 PM',
-//     tag: 'feature',
-//     author: 'Yashwanth',
-//   },
-//   {
-//     id: 'f7e6d5c4b3a2',
-//     message: 'Dashboard UI Updated',
-//     description: 'Added charts and analytics widgets.',
-//     timestamp: '13 May 2026 · 04:15 PM',
-//     tag: 'update',
-//     author: 'Yashwanth',
-//   },
-//   {
-//     id: 'c9d8e7f6a5b4',
-//     message: 'Fixed session expiry bug',
-//     description: 'Resolved an issue where sessions were expiring prematurely on mobile clients.',
-//     timestamp: '25 May 2026 · 11:05 AM',
-//     tag: 'fix',
-//     author: 'Yashwanth',
-//   },
-// ];
+const BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api";
 
-// const TAG_OPTIONS = ['all', 'feature', 'fix', 'update', 'milestone'] as const;
-// type TagFilter = typeof TAG_OPTIONS[number];
+export function ProjectUpdates() {
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
 
-// function ProjectUpdates() {
-//   const [updates, setUpdates] = useState<Update[]>(MOCK_UPDATES);
-//   const [filter, setFilter] = useState<TagFilter>('all');
-//   const [showForm, setShowForm] = useState(false);
-//   const [form, setForm] = useState({
-//     message: '',
-//     description: '',
-//     tag: 'update' as Update['tag'],
-//     author: '',
-//   });
+  const [project, setProject] = useState<any>(null);
+  const [updates, setUpdates] = useState<Update[]>([]);
+  const [projectProgress, setProjectProgress] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-//   const progress = 65;
+  const fetchData = async () => {
+    if (!projectId) return;
+    setLoading(true);
+    try {
+      // 1. Fetch all projects to find this specific project details
+      const projectsRes = await axios.get(`${BASE_URL}/projects/`);
+      const allProjects = projectsRes.data.projects || [];
+      const currentProject = allProjects.find(
+        (p: any) => String(p.id) === String(projectId)
+      );
 
-//   const handleAdd = () => {
-//     if (!form.message.trim()) return;
-//     const newUpdate: Update = {
-//       id: Math.random().toString(36).slice(2, 10),
-//       message: form.message,
-//       description: form.description,
-//       tag: form.tag,
-//       author: form.author || 'Anonymous',
-//       timestamp: new Date().toLocaleString('en-GB', {
-//         day: '2-digit', month: 'short', year: 'numeric',
-//         hour: '2-digit', minute: '2-digit',
-//       }),
-//     };
-//     setUpdates([newUpdate, ...updates]);
-//     setForm({ message: '', description: '', tag: 'update', author: '' });
-//     setShowForm(false);
-//   };
+      if (!currentProject) {
+        toast.error("Project not found.");
+        navigate("/projects");
+        return;
+      }
 
-//   const filtered = filter === 'all' ? updates : updates.filter((u) => u.tag === filter);
+      setProject(currentProject);
 
-//   const navigate = useNavigate()
+      // 2. Fetch updates for this project
+      const updatesRes = await axios.get(`${BASE_URL}/projects/${projectId}/updates`);
+      const allUpdates = updatesRes.data.updates || [];
 
-//   return (
-//     <div className="min-h-screen bg-gray-50 font-normal text-black">
+      // Sort updates by created_at descending (newest first)
+      const sortedUpdates = [...allUpdates].sort((a: any, b: any) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
 
-//       {/* Back nav */}
-//       <div className="bg-white border-b border-gray-200 px-5 py-3">
-//         <button className="flex items-center gap-2 text-sm text-gray-700 hover:text-black transition-colors" onClick={()=>navigate(-1)}>
-//           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-//             <path d="M19 12H5M12 5l-7 7 7 7" />
-//           </svg>
-//           Back to Projects
-//         </button>
-//       </div>
+      const mapped = sortedUpdates.map((u: any) => ({
+        id: String(u.id),
+        title: u.title,
+        content: u.content || "",
+        timestamp: u.created_at
+          ? new Date(u.created_at).toLocaleDateString("en-US", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            }) + " • " + new Date(u.created_at).toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "12 May 2026 • 10:30 PM",
+        percentage: u.progress || 0,
+        link: u.image || "",
+      }));
 
-//       <div className="p-40  py-6 space-y-4">
+      setUpdates(mapped);
 
-//         {/* Project info card */}
-//         <div className="bg-white border border-gray-200 rounded-xl p-4">
-//           <div className="flex gap-4 items-center">
-//             {/* Thumbnail */}
-//             <div className="w-40 h-40 rounded-lg bg-gray-200 overflow-hidden shrink-0">
-//               <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center">
-//                 <span className="text-2xl font-black text-white">P</span>
-//               </div>
-//             </div>
+      // Use the progress of the latest update, or default to 0
+      const latestProgress = mapped.length > 0 ? mapped[0].percentage : 0;
+      setProjectProgress(latestProgress);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.detail || "Failed to load project details.");
+      navigate("/projects");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-//             {/* Meta */}
-//             <div className="flex-1 min-w-0">
-//               <h1 className="text-2xl font-bold text-gray-900 mb-2">Restaurant R1 V1</h1>
-//               <div className="space-y-1">
-//                 <div className="flex items-center gap-2 text-sm text-gray-600">
-//                   <span className="w-24 shrink-0">Created At</span>
-//                   <span className="text-gray-400">:</span>
-//                   <span>17 May 2026, 10:30 PM</span>
-//                 </div>
-//                 <div className="flex items-center gap-2 text-sm text-gray-600">
-//                   <span className="w-24 shrink-0">Created By</span>
-//                   <span className="text-gray-400">:</span>
-//                   <span>John Doe</span>
-//                 </div>
-//                 <div className="flex items-center gap-2 text-sm text-gray-600">
-//                   <span className="w-24 shrink-0">Progress</span>
-//                   <span className="text-gray-400">:</span>
-//                   <div className="flex items-center gap-2 flex-1">
-//                     <span className="text-sm font-semibold text-gray-800">{progress}%</span>
-//                     <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-//                       <div
-//                         className="h-full bg-green-500 rounded-full transition-all duration-500"
-//                         style={{ width: `${progress}%` }}
-//                       />
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
+  useEffect(() => {
+    fetchData();
+  }, [projectId]);
 
-//         {/* Summary card */}
-//         <div className="bg-white border border-gray-200 rounded-xl p-4">
-//           <p className="text-sm font-semibold text-gray-800 mb-2">Summary</p>
-//           <p className="text-xs text-gray-500 leading-relaxed">
-//             Restaurant R1 V1 is the first version of our restaurant management system.
-//             It includes dashboard, menu management, order processing, customer management and basic reports.
-//           </p>
-//         </div>
+  const handleAddUpdate = async (newUpdateData: {
+    title: string;
+    content: string;
+    percentage: number;
+    link: string;
+  }) => {
+    if (!project || !projectId) return;
 
-//         {/* Create Update button row */}
-//         <div className="flex justify-end">
-//           <button
-//             onClick={() => setShowForm((v) => !v)}
-//             className="flex items-center gap-2 px-5 py-2.5 bg-black text-white text-xs font-semibold tracking-widest uppercase rounded-lg hover:bg-gray-800 transition-colors"
-//           >
-//             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-//               <path d="M12 5v14M5 12h14" />
-//             </svg>
-//             Create Update
-//           </button>
-//         </div>
+    try {
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-//         {/* Add update form */}
-//         {showForm && (
-//           <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-//             <p className="text-xs tracking-widest uppercase font-semibold text-gray-400 mb-4">New Update</p>
-//             <input
-//               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 outline-none focus:ring-2 focus:ring-black transition font-mono"
-//               placeholder="Update message *"
-//               value={form.message}
-//               onChange={(e) => setForm({ ...form, message: e.target.value })}
-//             />
-//             <textarea
-//               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 outline-none focus:ring-2 focus:ring-black transition resize-none font-mono"
-//               placeholder="Description (optional)"
-//               rows={2}
-//               value={form.description}
-//               onChange={(e) => setForm({ ...form, description: e.target.value })}
-//             />
-//             <div className="flex gap-3 flex-wrap mb-4">
-//               <input
-//                 className="flex-1 min-w-[140px] border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black transition font-mono"
-//                 placeholder="Your name"
-//                 value={form.author}
-//                 onChange={(e) => setForm({ ...form, author: e.target.value })}
-//               />
-//               <select
-//                 className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black transition bg-white font-mono"
-//                 value={form.tag}
-//                 onChange={(e) => setForm({ ...form, tag: e.target.value as Update['tag'] })}
-//               >
-//                 <option value="update">Update</option>
-//                 <option value="feature">Feature</option>
-//                 <option value="fix">Fix</option>
-//                 <option value="milestone">Milestone</option>
-//               </select>
-//             </div>
-//             <div className="flex gap-2 justify-end">
-//               <button
-//                 onClick={() => setShowForm(false)}
-//                 className="px-4 py-2 text-xs tracking-widest uppercase text-gray-400 hover:text-gray-700 transition"
-//               >
-//                 Cancel
-//               </button>
-//               <button
-//                 onClick={handleAdd}
-//                 className="px-5 py-2 bg-black text-white text-xs font-semibold tracking-widest uppercase rounded-lg hover:bg-gray-800 transition-colors"
-//               >
-//                 Push Update
-//               </button>
-//             </div>
-//           </div>
-//         )}
+      const payload = {
+        title: newUpdateData.title.trim(),
+        content: newUpdateData.content.trim(),
+        progress: newUpdateData.percentage,
+        image: newUpdateData.link || "",
+        projectId: parseInt(projectId),
+      };
 
-//         {/* Project Updates section */}
-//         <div>
-//           <div className="flex items-center justify-between mb-3">
-//             <p className="text-sm font-semibold text-gray-800">Project Updates</p>
+      await axios.post(
+        `${BASE_URL}/projects/${projectId}/add-update`,
+        payload,
+        { headers }
+      );
 
-//             {/* Filter pills */}
-//             <div className="flex gap-1.5 flex-wrap">
-//               {TAG_OPTIONS.map((t) => (
-//                 <button
-//                   key={t}
-//                   onClick={() => setFilter(t)}
-//                   className={`px-2.5 py-0.5 text-[10px] tracking-widest uppercase rounded-full border transition-colors ${
-//                     filter === t
-//                       ? 'bg-black text-white border-black'
-//                       : 'bg-white text-gray-400 border-gray-200 hover:border-gray-400 hover:text-gray-600'
-//                   }`}
-//                 >
-//                   {t}
-//                 </button>
-//               ))}
-//             </div>
-//           </div>
+      toast.success("Project update created successfully!");
+      // Reload details and updates
+      fetchData();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.detail || "Failed to add project update.");
+    }
+  };
 
-//           {/* Timeline */}
-//           {filtered.length > 0 ? (
-//             <div>
-//               {filtered.map((update, i) => (
-//                 <UpdateCard key={update.id} update={update} isLast={i === filtered.length - 1} />
-//               ))}
-//             </div>
-//           ) : (
-//             <div className="text-center py-12 border border-dashed border-gray-200 rounded-xl bg-white">
-//               <p className="text-sm text-gray-400">No updates for this filter.</p>
-//             </div>
-//           )}
-//         </div>
+  if (loading) {
+    return (
+      <OptionsContainer>
+        <div className="p-6 text-center text-gray-500 font-medium select-none">
+          Loading project details...
+        </div>
+      </OptionsContainer>
+    );
+  }
 
-//       </div>
-//     </div>
-//   );
-// }
+  if (!project) {
+    return null;
+  }
 
-// export default ProjectUpdates;
+  return (
+    <OptionsContainer>
+      <div className="p-4 sm:p-6 md:p-8 font-sans max-w-4xl mx-auto">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate("/projects")}
+          className="flex items-center gap-2 text-gray-900 font-bold hover:opacity-80 transition-opacity mb-6 text-base md:text-lg cursor-pointer"
+        >
+          <span className="text-xl">←</span> Back to Projects
+        </button>
+
+        {/* Project Card */}
+        <div className="bg-[#ebebeb] border border-neutral-300 rounded-md p-4 sm:p-6 mb-6">
+          <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+            {/* Project Thumbnail */}
+            <div className="w-full max-w-[240px] md:w-48 h-36 md:h-32 rounded-md border border-neutral-400 overflow-hidden shrink-0 shadow-sm bg-neutral-200">
+              <img
+                src={project.thumbnail || restaurantThumbnail}
+                alt={project.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = restaurantThumbnail;
+                }}
+              />
+            </div>
+
+            {/* Meta Information */}
+            <div className="flex-1 w-full text-center md:text-left">
+              <h1 className="text-gray-950 font-bold text-2xl md:text-3xl mb-4">
+                {project.name}
+              </h1>
+
+              <div className="grid grid-cols-[1fr] sm:grid-cols-[auto_10px_1fr] gap-y-2 gap-x-3 text-sm md:text-base text-gray-800">
+                <div className="flex justify-between sm:justify-start">
+                  <span className="font-semibold text-gray-900">Created At</span>
+                  <span className="sm:hidden font-medium">
+                    : {project.created_at
+                      ? new Date(project.created_at).toLocaleDateString("en-US", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "17 May 2026"}
+                  </span>
+                </div>
+                <span className="hidden sm:inline text-neutral-500">:</span>
+                <span className="hidden sm:inline font-medium">
+                  {project.created_at
+                    ? new Date(project.created_at).toLocaleDateString("en-US", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }) + " , " + new Date(project.created_at).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "17 May 2026 , 10:30 PM"}
+                </span>
+
+                <div className="flex justify-between sm:justify-start">
+                  <span className="font-semibold text-gray-900">Created By</span>
+                  <span className="sm:hidden font-medium">: John Doe</span>
+                </div>
+                <span className="hidden sm:inline text-neutral-500">:</span>
+                <span className="hidden sm:inline font-medium">John Doe</span>
+
+                <div className="flex justify-between sm:justify-start items-center">
+                  <span className="font-semibold text-gray-900">Progress</span>
+                  <span className="sm:hidden font-bold">: {projectProgress}%</span>
+                </div>
+                <span className="hidden sm:inline text-neutral-500 flex items-center">:</span>
+                <div className="flex items-center gap-3 w-full justify-end sm:justify-start">
+                  <span className="hidden sm:inline font-bold text-gray-900">
+                    {projectProgress}%
+                  </span>
+                  <div className="flex-1 h-3 bg-neutral-300 rounded-full overflow-hidden max-w-[200px]">
+                    <div
+                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                      style={{ width: `${projectProgress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Box */}
+        <div className="bg-[#ebebeb] border border-neutral-300 rounded-md p-5 mb-6">
+          <h2 className="text-gray-950 font-bold text-base md:text-lg mb-2">
+            Summary
+          </h2>
+          <p className="text-gray-800 text-sm md:text-base leading-relaxed">
+            {project.summary || "No summary provided for this project."}
+          </p>
+        </div>
+
+        {/* Create Update Button Row */}
+        <div className="flex justify-end mb-8">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-black hover:bg-neutral-800 text-white font-bold text-sm md:text-base px-8 py-2.5 rounded-md transition-all active:scale-98 shadow-sm cursor-pointer"
+          >
+            Create Update
+          </button>
+        </div>
+
+        {/* Project Updates List */}
+        <div>
+          <h2 className="text-gray-950 font-bold text-lg md:text-xl mb-4 border-b border-neutral-300 pb-2">
+            Project Updates
+          </h2>
+          <div className="space-y-4">
+            {updates.length > 0 ? (
+              updates.map((update) => (
+                <UpdateCard key={update.id} update={update} />
+              ))
+            ) : (
+              <div className="text-center py-12 bg-[#ebebeb] border border-dashed border-neutral-300 rounded-md">
+                <p className="text-sm text-gray-500">No updates yet.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Create Update Modal */}
+      <UpdateProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddUpdate}
+      />
+    </OptionsContainer>
+  );
+}
+
+export default ProjectUpdates;

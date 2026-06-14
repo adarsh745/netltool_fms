@@ -5,6 +5,7 @@ export interface Column<T> {
   label: string;
   render?: (value: unknown, row: T) => React.ReactNode;
   width?: string;
+  wrap?: boolean;
 }
 
 interface CustomTableProps<T> {
@@ -14,6 +15,7 @@ interface CustomTableProps<T> {
   title?: string;
   subtitle?: string;
   onRowClick?: (row: T) => void;
+  renderMobileCard?: (row: T) => React.ReactNode;
 }
 
 function getValue<T>(row: T, key: string): unknown {
@@ -27,6 +29,7 @@ function CustomTable<T extends Record<string, unknown>>({
   title,
   subtitle,
   onRowClick,
+  renderMobileCard,
 }: CustomTableProps<T>) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -116,8 +119,8 @@ function CustomTable<T extends Record<string, unknown>>({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
+      {/* Table (Desktop View) */}
+      <div className="hidden lg:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
@@ -170,7 +173,13 @@ function CustomTable<T extends Record<string, unknown>>({
                   className={`transition-colors duration-100 ${onRowClick ? "cursor-pointer" : ""} hover:bg-gray-50 group`}
                 >
                   {columns.map((col) => (
-                    <td key={col.key as string} className="px-6 py-3.5 text-gray-700 whitespace-nowrap">
+                    <td 
+                      key={col.key as string} 
+                      style={col.width ? { width: col.width } : {}}
+                      className={`px-6 py-3.5 text-gray-700 ${
+                        col.wrap ? "break-words whitespace-normal" : "whitespace-nowrap"
+                      }`}
+                    >
                       {col.render
                         ? col.render(getValue(row, col.key as string), row)
                         : (
@@ -185,6 +194,55 @@ function CustomTable<T extends Record<string, unknown>>({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Card List (Mobile & Tablet View) */}
+      <div className="block lg:hidden p-4 space-y-4 bg-gray-50/30">
+        {paginated.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-400">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+            </svg>
+            <p className="text-sm font-semibold mt-2">No results found</p>
+          </div>
+        ) : (
+          paginated.map((row, i) => (
+            renderMobileCard ? (
+              <div key={i} onClick={() => onRowClick?.(row)}>
+                {renderMobileCard(row)}
+              </div>
+            ) : (
+              <div
+                key={i}
+                onClick={() => onRowClick?.(row)}
+                className={`p-4 bg-white border border-gray-200 rounded-xl shadow-xs transition-all ${
+                  onRowClick ? "cursor-pointer active:scale-98" : ""
+                } hover:border-gray-300 flex flex-col gap-2.5`}
+              >
+                {columns.map((col) => {
+                  const hasLabel = col.label && col.label.trim() !== "";
+                  return (
+                    <div 
+                      key={col.key as string} 
+                      className="flex flex-col sm:flex-row sm:items-baseline justify-between py-1.5 border-b border-gray-50 last:border-b-0 gap-1 sm:gap-4"
+                    >
+                      {hasLabel && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 shrink-0">
+                          {col.label}
+                        </span>
+                      )}
+                      <div className={`text-sm text-gray-700 font-medium ${hasLabel ? "sm:text-right text-left" : "text-left"} overflow-hidden break-words w-full`}>
+                        {col.render
+                          ? col.render(getValue(row, col.key as string), row)
+                          : String(getValue(row, col.key as string) ?? "—")}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ))
+        )}
       </div>
 
       {/* Footer / Pagination */}

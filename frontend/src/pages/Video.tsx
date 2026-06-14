@@ -8,7 +8,7 @@ function Video() {
       <div className="p-8">
 
         {/* Header */}
-        <div className="flex justify-between items-start mb-8 pb-6 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
           <div>
             <p className="text-xs tracking-[0.2em] uppercase text-gray-400 font-medium mb-1">
               Studio

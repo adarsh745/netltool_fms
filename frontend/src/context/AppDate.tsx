@@ -16,6 +16,7 @@ interface IAppData{
     isLoggedIn:boolean;
     login:({email,password}:{email:string,password:string})=>Promise<void>;
     logout:()=>void;
+    checkLoggedIn:()=>Promise<void>;
 }
 
 const BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:5000/api';
@@ -121,7 +122,7 @@ export function AppProvider({children}:{children:react.ReactNode}){
         toast.success('Logged out successfully!');
     }
     
-    return <AppDataContext.Provider value={{permissions ,login, logout , user, appLoading, authLoading, isError, error, isLoggedIn}}>
+    return <AppDataContext.Provider value={{permissions ,login, logout , user, appLoading, authLoading, isError, error, isLoggedIn, checkLoggedIn}}>
         {children}
     </AppDataContext.Provider>
 }

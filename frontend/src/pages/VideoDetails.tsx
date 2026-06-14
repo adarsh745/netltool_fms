@@ -225,7 +225,7 @@ We will have weekly check-ins to track progress and ensure smooth execution.
                 {/* Video Information Card */}
                 <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm">
                   <h3 className="text-xs font-bold text-gray-900 mb-4 uppercase tracking-wider">Video Information</h3>
-                  <div className="grid grid-cols-4 border border-gray-200 rounded-xl divide-x divide-gray-200 overflow-hidden text-left bg-gray-50/50">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 border border-gray-200 rounded-xl divide-y sm:divide-y-0 sm:divide-x divide-gray-200 overflow-hidden text-left bg-gray-50/50">
                     <div className="p-4 flex flex-col gap-1.5">
                       <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Format</span>
                       <span className="text-xs font-bold text-gray-800">{video.format || "MP4"}</span>
@@ -234,7 +234,7 @@ We will have weekly check-ins to track progress and ensure smooth execution.
                       <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Resolution</span>
                       <span className="text-xs font-bold text-gray-800">1080p</span>
                     </div>
-                    <div className="p-4 flex flex-col gap-1.5">
+                    <div className="p-4 flex flex-col gap-1.5 border-t-0">
                       <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Duration</span>
                       <span className="text-xs font-bold text-gray-800">{video.duration}</span>
                     </div>
@@ -334,7 +334,7 @@ We will have weekly check-ins to track progress and ensure smooth execution.
               {viewMode === "transcript" && (
                 <div className="flex flex-col gap-5 p-8 text-left">
                   {/* Header row */}
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div>
                       <h2 className="text-xl font-bold text-gray-900">Transcript</h2>
                       <p className="text-xs text-gray-400 font-bold mt-1.5">{video.title}</p>
@@ -397,7 +397,7 @@ We will have weekly check-ins to track progress and ensure smooth execution.
               {viewMode === "blog" && (
                 <div className="flex flex-col gap-5 p-8 text-left">
                   {/* Header row */}
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div>
                       <h2 className="text-xl font-bold text-gray-900">Blog Generated from Video</h2>
                       <p className="text-xs text-gray-400 font-bold mt-1.5">{video.title}</p>

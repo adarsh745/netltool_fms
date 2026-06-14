@@ -56,10 +56,12 @@ function CustomRadio({
                 onClick={() => !disabled && onChange(option)}
                 className={[
                   "flex items-start justify-between gap-3 text-left",
-                  "w-full px-4 py-3 rounded-lg border text-sm",
+                  orientation === "horizontal"
+                    ? "flex-1 min-w-[100px] px-4 py-2.5 rounded-lg border text-sm"
+                    : "w-full px-4 py-3 rounded-lg border text-sm",
                   "transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1",
                   isSelected
-                    ? "border-gray-400 bg-gray-50"
+                    ? "border-gray-400 bg-gray-50 font-semibold"
                     : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50",
                   disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
                 ].join(" ")}
@@ -106,7 +108,9 @@ function CustomRadio({
               onClick={() => !disabled && onChange(option)}
               className={[
                 "flex items-center gap-3 text-left",
-                "w-full px-3 py-2.5 rounded-lg border bg-white text-sm",
+                orientation === "horizontal"
+                  ? "flex-1 min-w-[100px] px-3 py-2.5 rounded-lg border bg-white text-sm"
+                  : "w-full px-3 py-2.5 rounded-lg border bg-white text-sm",
                 "transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1",
                 isSelected
                   ? "border-gray-400 bg-gray-50"

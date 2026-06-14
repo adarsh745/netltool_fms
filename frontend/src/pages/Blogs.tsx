@@ -9,7 +9,7 @@ import { useDeleteBlogMutation, useGetBlogByIdQuery, useGetBlogsQuery } from '..
 import BlogsTableSkeleton from '../components/Loading/SkeletonTable'
 import SkeletonTable from '../components/Loading/SkeletonTable'
 
-import { MoreVertical, Rows } from "lucide-react";
+import { MoreVertical, Rows, User, Calendar, Edit, Eye, Trash2, Copy } from "lucide-react";
 //@ts-ignore
 import viewIcon from "../assets/View.svg";
 //@ts-ignore
@@ -61,51 +61,57 @@ const Blogs = () => {
 
 
   const column = [
-    { key: "id", label: "id" },
+    { key: "id", label: "id", width: "60px" },
     {
       key: "title", label: "Title",
+      wrap: true,
+      width: "30%",
       render: (value: any, row: any) => (
         <button
-          onClick={() => navigate(`/blog/${row.id || row.id}`)}
-          className='text-left font-medium hover:text-back-700 hover:underline'>
+          onClick={() => navigate(`/blog/${row.id}`)}
+          className='text-left font-medium hover:text-neutral-700 hover:underline whitespace-normal break-words w-full'>
           {value}
         </button>
       )
     },
     {
       key: "author_id", label: "Author",
+      width: "15%",
       render: (value: any, row: any) => (
-        <p>{row?.user?.first_name}</p>
+        <p className="whitespace-normal break-words">{row?.user?.first_name}</p>
       )
     },
     {
       key: "summary",
       label: "Summary",
+      wrap: true,
+      width: "35%",
       render: (_: any, row: any) => {
         return (
-          <div className="w-52">
-            <p className="whitespace-normal break-words">
-              {row?.summary?.slice(0, 50)}...
-            </p>
-          </div>
+          <p className="whitespace-normal break-words text-gray-500">
+            {row?.summary ? `${row.summary.slice(0, 80)}...` : "—"}
+          </p>
         );
       },
     },
     {
       key: "created_at", label: "Date",
+      width: "120px",
       render: (_: any, row: any) => (
-        <p>{dateFromMatter(row.created_at)}</p>
+        <p className="whitespace-nowrap">{dateFromMatter(row.created_at)}</p>
       )
     },
     {
       key: "status", label: "status",
+      width: "100px",
       render: (value: any, row: any) => (
-        <p className='bg-green-200 px-4 py-2 rounded-xl text-center'>Published</p>
+        <p className='bg-green-100 text-green-800 text-xs px-2.5 py-1.5 rounded-lg text-center font-medium'>Published</p>
       )
     },
     {
       key: "actions",
       label: "Actions",
+      width: "80px",
       render: (_: any, row: any) => (
         <div className="relative">
           <button
@@ -197,6 +203,99 @@ const Blogs = () => {
     },
   ];
 
+  const renderMobileCard = (row: any) => {
+    const timeAgo = dateFromMatter(row.created_at);
+
+    return (
+      <div className="w-full bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col font-sans hover:border-gray-300 hover:shadow-md transition-all select-none gap-2">
+        {/* Header Row: Blog ID and status badge */}
+        <div className="flex items-center justify-between text-xs text-gray-400 font-semibold mb-0.5">
+          <span className="font-mono text-gray-500 font-bold">#{row.id}</span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 border border-green-150">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            Published
+          </span>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">
+          {row.title}
+        </h3>
+
+        {/* Author & Date Row */}
+        <div className="flex items-center gap-3 text-[11px] text-gray-500 font-medium">
+          <span className="flex items-center gap-1">
+            <User size={13} className="text-gray-400 stroke-[2.25]" />
+            {row?.user?.first_name || "Author"}
+          </span>
+          <span className="flex items-center gap-1">
+            <Calendar size={13} className="text-gray-400 stroke-[2.25]" />
+            {timeAgo}
+          </span>
+        </div>
+
+        {/* Summary (restricted to 2 lines) */}
+        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 mt-0.5 mb-1">
+          {row.summary || "No description available."}
+        </p>
+
+        {/* Actions Footer - Bottom Action Bar with 4 evenly spaced icon buttons */}
+        <div className="grid grid-cols-4 border-t border-gray-100 -mx-4 -mb-4 mt-auto overflow-hidden rounded-b-xl">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/blog-editor/${row.id}`);
+            }}
+            className="flex items-center justify-center py-3.5 text-gray-500 hover:text-[#4F46E5] hover:bg-gray-50 transition-colors cursor-pointer select-none active:bg-gray-100"
+            title="Edit Blog"
+          >
+            <Edit size={15} className="stroke-[2.25]" />
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/blog/${row.id}`);
+            }}
+            className="flex items-center justify-center py-3.5 text-gray-500 hover:text-[#4F46E5] hover:bg-gray-50 transition-colors cursor-pointer select-none active:bg-gray-100"
+            title="View Blog"
+          >
+            <Eye size={15} className="stroke-[2.25]" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCopiedId(row.id);
+              handleCopyLink(row.id);
+              setTimeout(() => setCopiedId(""), 2000);
+            }}
+            className="relative flex items-center justify-center py-3.5 text-gray-500 hover:text-green-600 hover:bg-gray-50 transition-colors cursor-pointer select-none active:bg-gray-100"
+            title="Copy Link"
+          >
+            <Copy size={15} className={`stroke-[2.25] transition-transform duration-250 ${copiedId === row.id ? "text-green-600 scale-110" : ""}`} />
+            {copiedId === row.id && (
+              <span className="absolute text-[9px] font-bold text-green-600 bg-green-50 border border-green-200 px-1 rounded -translate-y-6">Copied</span>
+            )}
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmModal(true);
+              setSelectedTitle(row?.title);
+              setselectedId(row.id);
+            }}
+            className="flex items-center justify-center py-3.5 text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer select-none active:bg-red-100"
+            title="Delete Blog"
+          >
+            <Trash2 size={15} className="stroke-[2.25]" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return <OptionsContainer>
       <SkeletonTable />
@@ -260,7 +359,7 @@ const Blogs = () => {
     </Modal>
     <OptionsContainer>
       <div className="p-6" >
-        <div className="flex flex-row justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
               Blogs / Notes
@@ -277,7 +376,7 @@ const Blogs = () => {
         </div>
 
         <div>
-          <CustomTable columns={column} data={data?.blogs || []} />
+            <CustomTable columns={column} data={data?.blogs || []} renderMobileCard={renderMobileCard} />
         </div>
       </div>
     </OptionsContainer>

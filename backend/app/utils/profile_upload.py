@@ -31,4 +31,5 @@ def upload_profile_image(
     with open(file_path, "wb") as f:
         f.write(profile_image.file.read())
 
-    return file_path
+    return file_path.replace("\\", "/")
+

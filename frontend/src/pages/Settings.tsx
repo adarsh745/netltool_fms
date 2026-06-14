@@ -66,7 +66,7 @@ function Settings() {
 
         </div>
 
-        <div className=" border border-gray-200 rounded-md bg-white p-4 flex gap-3">
+        <div className="border border-gray-200 rounded-md bg-white p-4 flex flex-col md:flex-row gap-6">
 
           <SettingsSidebar
             activeTab={activeTab}

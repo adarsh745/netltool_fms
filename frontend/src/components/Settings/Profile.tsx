@@ -3,6 +3,7 @@ import Button from "../UI/Button";
 import CustomInput from "../../components/Login/CustomInput";
 // @ts-ignore
 import CameraIcon from "../../assets/camera.svg";
+import toast from "react-hot-toast";
 
 import { useAppData } from "../../context/AppDate";
 import { useUpdateUserProfileMutation } from "../../services/api/userSlice";
@@ -28,14 +29,14 @@ function ProfileSettings() {
     lastName: "",
   });
 
-  const { user } = useAppData();
+  const { user, checkLoggedIn } = useAppData();
 
   const [updateProfile, { isLoading }] = useUpdateUserProfileMutation();
 
   const avatarSrc = image
     ? image
     : user?.avatar_url
-    ? `${BASE_URL}${user.avatar_url}`
+    ? `${BASE_URL}${user.avatar_url.replace(/\\/g, "/")}`
     : null;
 
   const initials = user
@@ -104,14 +105,17 @@ function ProfileSettings() {
         }
       }
       await updateProfile({ body: newFormData }).unwrap();
+      await checkLoggedIn();
+      toast.success("Profile updated successfully!");
       // After successful save, reset the baseline so button disables again
       setOriginalData({
         firstName: formData.firstName,
         lastName: formData.lastName,
       });
       setImage("");
-    } catch (err) {
+    } catch (err: any) {
       console.log("Error updating profile: ", err);
+      toast.error(err?.data?.detail || "Failed to update profile.");
     }
   }
 
